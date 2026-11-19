@@ -1,27 +1,27 @@
 use std::{
-    collections::HashMap,
-    io::{Read, Write},
+    io::Write,
     net::{Shutdown, TcpListener, TcpStream},
 };
 
+use crate::request::Request;
+
 pub struct Server {
-    address: String,
-    handlers: HashMap<String, Box<dyn Fn() -> ()>>,
+    host: String,
+    port: u16,
 }
 
 impl Server {
     pub fn new(host: Option<&str>, port: Option<u16>) -> Self {
-        let host = host.unwrap_or("localhost").to_owned();
-        let port = port.unwrap_or(42069);
         Self {
-            address: format!("{host}:{port}"),
-            handlers: HashMap::new(),
+            host: host.unwrap_or("localhost").to_owned(),
+            port: port.unwrap_or(42069),
         }
     }
 
     pub fn run(self) -> () {
-        println!("Amoeba server running on {}", self.address);
-        let listener = TcpListener::bind(&self.address).unwrap();
+        let address = format!("{}:{}", self.host, self.port);
+        println!("Amoeba server running on {}", address);
+        let listener = TcpListener::bind(&address).unwrap();
         for stream in listener.incoming() {
             let mut stream = stream.unwrap();
             self.handle_request(&mut stream);
@@ -30,10 +30,8 @@ impl Server {
     }
 
     fn handle_request(&self, stream: &mut TcpStream) -> () {
-        let mut buf = [0u8; 1024];
-        let bytes = stream.read(&mut buf).unwrap();
-        let request = String::from_utf8_lossy(&buf[..bytes]);
-        println!("{request}");
+        let request = Request::from(&mut *stream);
+        println!("{:#?}", request);
         self.handle_response(stream);
     }
 
@@ -42,6 +40,6 @@ impl Server {
     }
 
     fn ok(&self) -> &'static [u8] {
-        b"HTTP/1.1 200 OK\r\n\r\n"
+        b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nhello world"
     }
 }
