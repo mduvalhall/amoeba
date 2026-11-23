@@ -6,6 +6,7 @@ pub struct Request {
     pub path: String,
     pub headers: HashMap<String, String>,
     pub body: Option<Vec<u8>>,
+    pub params: Option<HashMap<String, String>>,
 }
 
 impl<'a> From<&mut TcpStream> for Request {
@@ -62,6 +63,7 @@ impl<'a> From<&mut TcpStream> for Request {
             path,
             headers,
             body,
+            params: None,
         }
     }
 }

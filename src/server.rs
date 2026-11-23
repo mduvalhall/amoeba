@@ -3,11 +3,12 @@ use std::{
     net::{Shutdown, TcpListener, TcpStream},
 };
 
-use crate::request::Request;
+use crate::{request::Request, route::Route};
 
 pub struct Server {
     host: String,
     port: u16,
+    handlers: Vec<(Route, Box<dyn Fn(Request)>)>,
 }
 
 impl Server {
@@ -15,6 +16,7 @@ impl Server {
         Self {
             host: host.unwrap_or("localhost").to_owned(),
             port: port.unwrap_or(42069),
+            handlers: Vec::new(),
         }
     }
 
@@ -29,8 +31,15 @@ impl Server {
         }
     }
 
+    pub fn add_handler(&mut self, route: Route, handler: fn(Request)) {
+        self.handlers.push((route, Box::new(handler)))
+    }
+
     fn handle_request(&self, stream: &mut TcpStream) -> () {
-        let request = Request::from(&mut *stream);
+        let mut request = Request::from(&mut *stream);
+        let route = Route::new("/users/{id}");
+        request.params = route.extract(&request.path);
+
         println!("{:#?}", request);
         self.handle_response(stream);
     }
