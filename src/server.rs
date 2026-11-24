@@ -12,10 +12,10 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(host: Option<&str>, port: Option<u16>) -> Self {
+    pub fn new(host: &str, port: u16) -> Self {
         Self {
-            host: host.unwrap_or("localhost").to_owned(),
-            port: port.unwrap_or(42069),
+            host: host.to_owned(),
+            port,
             handlers: Vec::new(),
         }
     }
@@ -37,10 +37,14 @@ impl Server {
 
     fn handle_request(&self, stream: &mut TcpStream) -> () {
         let mut request = Request::from(&mut *stream);
-        let route = Route::new("/users/{id}");
-        request.params = route.extract(&request.path);
-
-        println!("{:#?}", request);
+        for (route, handler) in self.handlers.iter() {
+            let params = route.extract(&request.path);
+            if params.is_some() {
+                request.params = params;
+                handler(request);
+                break;
+            }
+        }
         self.handle_response(stream);
     }
 
@@ -50,5 +54,11 @@ impl Server {
 
     fn ok(&self) -> &'static [u8] {
         b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nhello world"
+    }
+}
+
+impl Default for Server {
+    fn default() -> Self {
+        Self::new("localhost", 42069)
     }
 }

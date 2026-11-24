@@ -1,5 +1,12 @@
-use amoeba::server::Server;
+use amoeba::{request::Request, route::Route, server::Server};
+
+fn user(request: Request) {
+    let user_id = request.param::<u32>("user_id");
+    dbg!(user_id);
+}
 
 fn main() {
-    Server::new(None, None).run()
+    let mut server = Server::default();
+    server.add_handler(Route::new("/users/{user_id}"), user);
+    server.run();
 }

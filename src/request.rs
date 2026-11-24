@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::Read, net::TcpStream};
+use std::{collections::HashMap, fmt::Debug, io::Read, net::TcpStream, str::FromStr};
 
 #[derive(Debug)]
 pub struct Request {
@@ -7,6 +7,19 @@ pub struct Request {
     pub headers: HashMap<String, String>,
     pub body: Option<Vec<u8>>,
     pub params: Option<HashMap<String, String>>,
+}
+
+impl Request {
+    pub fn param<T>(&self, param: &str) -> T
+    where
+        T: FromStr,
+        T::Err: Debug,
+    {
+        match &self.params {
+            Some(params) => params.get(param).unwrap().parse().unwrap(),
+            None => panic!(),
+        }
+    }
 }
 
 impl<'a> From<&mut TcpStream> for Request {

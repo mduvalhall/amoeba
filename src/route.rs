@@ -27,8 +27,8 @@ impl Route {
         let mut params = HashMap::new();
         for (segment, part) in self.segments.iter().zip(parts) {
             match segment {
-                Segment::Plain(literal) => {
-                    if literal.as_str() != part {
+                Segment::Plain(plain) => {
+                    if plain.as_str() != part {
                         return None;
                     }
                 }
