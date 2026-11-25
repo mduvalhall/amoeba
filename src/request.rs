@@ -15,8 +15,12 @@ impl Request {
         T: FromStr,
         T::Err: Debug,
     {
+        self.raw_param(param).parse().unwrap()
+    }
+
+    pub fn raw_param(&self, param: &str) -> String {
         match &self.params {
-            Some(params) => params.get(param).unwrap().parse().unwrap(),
+            Some(params) => params.get(param).unwrap().clone(),
             None => panic!(),
         }
     }

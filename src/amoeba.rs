@@ -5,13 +5,13 @@ use std::{
 
 use crate::{request::Request, route::Route};
 
-pub struct Server {
+pub struct Amoeba {
     host: String,
     port: u16,
     handlers: Vec<(Route, Box<dyn Fn(Request)>)>,
 }
 
-impl Server {
+impl Amoeba {
     pub fn new(host: &str, port: u16) -> Self {
         Self {
             host: host.to_owned(),
@@ -57,7 +57,7 @@ impl Server {
     }
 }
 
-impl Default for Server {
+impl Default for Amoeba {
     fn default() -> Self {
         Self::new("localhost", 42069)
     }
